@@ -11,15 +11,18 @@
  * for incoming messages from the server.
  */
 
-import java.net.*;
-import java.awt.BorderLayout;
-import java.awt.event.*;
-import java.awt.FlowLayout;
-import javax.swing.*;
-import java.io.*;
-import java.util.Date;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
+//import java.net.*;
+//import java.awt.BorderLayout;
+//import java.awt.event.*;
+//import java.awt.FlowLayout;
+import java.io.ObjectInputStream;
+//import javax.swing.*;
+//import java.io.*;
+//import java.util.Date;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+//import java.text.DateFormat;
+//import java.text.SimpleDateFormat;
 
  /**
   * listenClient 
@@ -33,6 +36,8 @@ public class listenClient extends Thread {
     ObjectInputStream inS;
     JPanel jp;
     String message;
+    byte [] messageBytes;
+    static final byte[] LOGOFF = {1};
     
    /**
    * listenClient
@@ -69,9 +74,13 @@ public class listenClient extends Thread {
     public void run() {
       try{      
         while(true) { // listen for messages indefinitely
-          message = (String)inS.readObject();
-          //DECRYPT MESSAGE HERE
-          // System.out.println(message);    
+          messageBytes = (byte[])inS.readObject();
+          if (messageBytes.length == 1 && messageBytes[0]==LOGOFF[0]) {
+            message = "someone left the chat";
+          }
+          else {  
+            message = chatClient.decrypt(messageBytes);     //DECRYPT MESSAGE HERE
+          }            
           jp.add(new JLabel(message+"\n"));
           jp.updateUI();
         }

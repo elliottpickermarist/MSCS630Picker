@@ -11,15 +11,20 @@
  * for incoming messages from each chatClient.
  */
 
-import java.net.*;
-import java.awt.BorderLayout;
-import java.awt.event.*;
-import java.awt.FlowLayout;
-import javax.swing.*;
-import java.io.*;
-import java.util.Date;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
+//import java.net.*;
+//import java.awt.BorderLayout;
+//import java.awt.event.*;
+//import java.awt.FlowLayout;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.net.SocketException;
+import java.io.EOFException;
+//import javax.swing.*;
+//import java.io.*;
+//import java.util.Date;
+//import java.text.DateFormat;
+//import java.text.SimpleDateFormat;
+
 
 
  /**
@@ -32,8 +37,9 @@ import java.text.SimpleDateFormat;
  */
 public class listenServer extends Thread {
   ObjectInputStream inS;
-  String message;
+  byte[] messageBytes;
   ObjectOutputStream outS;
+  static final byte[] LOGOFF = {1};
   
    /**
    * listenServer
@@ -74,16 +80,24 @@ public class listenServer extends Thread {
   public void run() {
     try{
       while(true) {
-        message = (String)inS.readObject();
-        chatServer.sendMessage(message);
+        messageBytes = (byte[])inS.readObject();
+        chatServer.sendMessage(messageBytes);
       }
     }
     catch(SocketException SE ) { // likely a user logging off
       System.out.println("processed a logoff");
       chatServer.removeOut(outS); // so server stops broadcasting there 
+      chatServer.sendMessage(LOGOFF); // tell clients that someone left   
     }
+    catch(EOFException EE ) { // A user logging off without ever successfully connecting
+      System.out.println("Unsuccessful Connection attempt");
+      chatServer.removeOut(outS); // so server stops broadcasting there 
+      //chatServer.sendMessage(LOGOFF); // tell clients that someone left   
+    }
+    
     catch(Exception e) {
       System.out.println(e);
+      e.printStackTrace();
     }
   } // end run 
 } // end listen 

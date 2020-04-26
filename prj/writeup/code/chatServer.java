@@ -9,9 +9,16 @@
  * chatServer class which handles the server
  * for the secure chat program.
  */
+ 
 
-import java.io.*;
-import java.net.*;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.net.InetAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.util.ArrayList;
 import java.util.ListIterator;
 
@@ -30,6 +37,7 @@ public class chatServer {
   static String message;
   static BufferedReader br;
   static String userName;
+  static boolean showAll;
 
    /**
    * main
@@ -43,23 +51,26 @@ public class chatServer {
    * Return value: None. 
    */
   public static void main(String args[]) {
+    showAll = false;
+    if(args.length > 0)
+      showAll = true;
     outList= new ArrayList<ObjectOutputStream>();
     try{
       //Create a Server Socket for clients to connect to 
       providerSocket = new ServerSocket(2004, 10); // this is the socket we listen on 
       //Wait for connections 
-      System.out.println("Waiting for connection at "+providerSocket.getLocalSocketAddress());
-      System.out.println("Server Started");
+      System.out.println("SecureChat Server Started");
+      System.out.println("Waiting for incoming connections");
       while(true) { // wait for incoming connections indefinitely 
       // there's no need to do anything else because the listeners will call sendMessage as appropriate
         connection = providerSocket.accept();
-        System.out.println("Connection received from " + connection.getInetAddress().getHostName());
+        System.out.println("Connection received from " + connection.getInetAddress().getHostAddress());
         //Add the output stream to our outlist 
         out = new ObjectOutputStream(connection.getOutputStream());
         outList.add(out);
         out.flush();
         in = new ObjectInputStream(connection.getInputStream());
-        //Add a listenServer to hangle his input stream 
+        //Add a listenServer to handle his input stream 
         listenServer l = new listenServer(in,out); // start one input listener for each conection , out is passed so that it can be removed at cleanup
         l.start();
       }
@@ -78,7 +89,7 @@ public class chatServer {
         ioException.printStackTrace();
       }
     }  
-  } // end run 
+  } 
   
    /**
    * removeOut
@@ -113,14 +124,15 @@ public class chatServer {
    * 
    * Return value: None. 
    */
-  public static void sendMessage(String msg) {  //  called by listenServer 
+  public static void sendMessage(byte[] msgBytes) {  //  called by listenServer 
     // optionally show server messages here!!
-    System.out.println(msg);
+    if(showAll)
+      System.out.println(new String(msgBytes));
     try{
       ListIterator<ObjectOutputStream> iter=outList.listIterator();
       while(iter.hasNext()) { // send to each recipient
         ObjectOutputStream o=iter.next();
-        o.writeObject(msg);  
+        o.writeObject(msgBytes);  
         o.flush();
       }
     }
