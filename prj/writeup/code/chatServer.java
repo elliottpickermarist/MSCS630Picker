@@ -38,6 +38,8 @@ public class chatServer {
   static BufferedReader br;
   static String userName;
   static boolean showAll;
+  static final int PORT = 2004;
+ 
 
    /**
    * main
@@ -57,7 +59,7 @@ public class chatServer {
     outList= new ArrayList<ObjectOutputStream>();
     try{
       //Create a Server Socket for clients to connect to 
-      providerSocket = new ServerSocket(2004, 10); // this is the socket we listen on 
+      providerSocket = new ServerSocket(PORT); // this is the socket we listen on 
       //Wait for connections 
       System.out.println("SecureChat Server Started");
       System.out.println("Waiting for incoming connections");

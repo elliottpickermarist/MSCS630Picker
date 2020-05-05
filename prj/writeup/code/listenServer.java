@@ -11,19 +11,12 @@
  * for incoming messages from each chatClient.
  */
 
-//import java.net.*;
-//import java.awt.BorderLayout;
-//import java.awt.event.*;
-//import java.awt.FlowLayout;
+
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.SocketException;
 import java.io.EOFException;
-//import javax.swing.*;
-//import java.io.*;
-//import java.util.Date;
-//import java.text.DateFormat;
-//import java.text.SimpleDateFormat;
+
 
 
 
@@ -39,7 +32,7 @@ public class listenServer extends Thread {
   ObjectInputStream inS;
   byte[] messageBytes;
   ObjectOutputStream outS;
-  static final byte[] LOGOFF = {1};
+  static final byte[] LOGOFF = {1}; // this will be sent as a message when processing a logoff
   
    /**
    * listenServer
@@ -90,14 +83,13 @@ public class listenServer extends Thread {
       chatServer.sendMessage(LOGOFF); // tell clients that someone left   
     }
     catch(EOFException EE ) { // A user logging off without ever successfully connecting
+    // This happens when a key file including server has been selected but closed before enterring username
       System.out.println("Unsuccessful Connection attempt");
-      chatServer.removeOut(outS); // so server stops broadcasting there 
-      //chatServer.sendMessage(LOGOFF); // tell clients that someone left   
+      chatServer.removeOut(outS); // so server stops broadcasting there   
     }
-    
     catch(Exception e) {
       System.out.println(e);
       e.printStackTrace();
     }
-  } // end run 
-} // end listen 
+  }
+} 

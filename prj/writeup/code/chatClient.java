@@ -65,6 +65,10 @@ public class chatClient {
   static Cipher encryptCipher;
   static Cipher decryptCipher;
   static final String AES = "AES";
+  static final int JFWIDTH = 550;
+  static final int JFHEIGHT = 300;
+  static final int JTFCOLUMNS = 40;
+  static final int PORT = 2004;
   
    /**
    * main
@@ -128,7 +132,17 @@ public class chatClient {
     }
   }
   
-  
+   /**
+   * locateKeyFile
+   *
+   * This method builds the panel to prompt the user for 
+   * the key file to be used. It then sets the key and ip 
+   * files appropriately
+   *
+   * Parameters:   None.
+   *
+   * Return value: None. 
+   */
   public static void locateKeyFile() throws Exception {
     JPanel panel= new JPanel(); 
     JFileChooser jfc = new JFileChooser();
@@ -138,14 +152,10 @@ public class chatClient {
     jfc.setSelectedFile(new File("Securechat.key"));
     jfc.showOpenDialog(null);
     try{
-     
       File file = jfc.getSelectedFile();
-      //System.out.println("Using keyfile: "+file.getPath());
       BufferedReader br = new BufferedReader(new FileReader(file.getPath()));
       key = br.readLine();
       ip = br.readLine();
-      System.out.println("key - |"+key+"|");
-      System.out.println("ip -  "+ip);
     }
     catch(Exception e) {
       System.out.println("Error accessing key file!");
@@ -158,9 +168,10 @@ public class chatClient {
    * buildGUI
    *
    * This method is called at startup to create the GUI for the chat Client
-   * It creates a JPanel and attaches the send button to it. Note the action listener 
-   * responsible for the send button and enter will be created in the main method !!!!!!!!!!!!!!!!!!!!!!!!why ? cant we move it down here?  
+   * It creates a JPanel and attaches the send button to it. It then adds
+   * the ActionListener for both enter key and send button requests.   
    * 
+   * Parameters:   None. 
    *   
    * Return value: None. 
    */
@@ -170,13 +181,13 @@ public class chatClient {
     jsp=new JScrollPane(P,JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
     JF.add(jsp);
     bottomP=new JPanel();
-    field= new JTextField(40);
+    field= new JTextField(JTFCOLUMNS);
     bottomP.add(field,BorderLayout.SOUTH);
     button1 = new JButton("SEND");
     bottomP.add(button1,BorderLayout.EAST);  
     JF.add(bottomP, BorderLayout.SOUTH); 
     JF.setTitle(userName+"- SecureChat by Elliott Picker");
-    JF.setSize(550,300);
+    JF.setSize(JFWIDTH,JFHEIGHT);
     JF.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     JF.setVisible(true);
     P.setLayout(new BoxLayout(P, BoxLayout.Y_AXIS));
@@ -194,7 +205,6 @@ public class chatClient {
       sendMessage(userName+" joined chat at "+dateFormat.format(date)); // send login message 
       ActionListener clickSend = new ActionListener() { // action listener used for both send and enter key 
         public void actionPerformed(ActionEvent e) {
-          //DateFormat dateFormat = new SimpleDateFormat("h:mm:ss a");
           Date date = new Date();
           sendMessage(userName+"("+dateFormat.format(date)+"): "+field.getText());  
           field.setText("");
@@ -209,7 +219,17 @@ public class chatClient {
     }
   }
   
-  
+   /**
+   * encrypt
+   *
+   * This method encrypts an input String based on the encryptCipher  
+   * previously initialized.    
+   * 
+   * Parameters:  
+   *   strClearText: a String representing the text to be encrypted  
+   *   
+   * Return value: A byte array representing the encrypted value. 
+   */
   public static byte[] encrypt(String strClearText){  
     try {
       return encryptCipher.doFinal(strClearText.getBytes());
@@ -218,9 +238,20 @@ public class chatClient {
       System.out.println("CANT ENCRYPT: |"+strClearText+"|");
       System.out.println(e);
     }
-  return null;
-}
+  return null; // wasn't able to encrypt but return something
+  }
 
+   /**
+   * decrypt
+   *
+   * This method encrypts an input byte array based on the decryptCipher  
+   * previously initialized.    
+   * 
+   * Parameters:  
+   *   strBytes: A byte array representing encrypted text 
+   *   
+   * Return value: A String representing the plain text value of the input 
+   */
   public static String decrypt(byte[] strBytes){
     try {
       return new String(decryptCipher.doFinal(strBytes));   
@@ -232,6 +263,16 @@ public class chatClient {
   return null;
   } 
   
+   /**
+   * initializeCiphers 
+   *
+   * This method is called at startup to initialize the encrypt and decrypt 
+   * Ciphers based on the key value previously assigned.  
+   * 
+   * Parameters:   None. 
+   *   
+   * Return value: None. 
+   */
   public static void initializeCiphers() throws Exception {
     try {     
       encryptCipher=Cipher.getInstance(AES);
@@ -245,10 +286,20 @@ public class chatClient {
     }    
   }      
   
+   /**
+   * connectToServer
+   *
+   * This method is called at startup to establish the input and  
+   * output streams to communicate with the server.
+   * 
+   * Parameters:   None. 
+   *   
+   * Return value: None. 
+   */
   public static void connectToServer() throws Exception {
     try{  
       //create a socket to connect to the server
-      requestSocket = new Socket(InetAddress.getByName(ip), 2004);
+      requestSocket = new Socket(InetAddress.getByName(ip),PORT);
       //get input and output streams from server 
       out = new ObjectOutputStream(requestSocket.getOutputStream());
       out.flush();
@@ -266,6 +317,15 @@ public class chatClient {
     } 
   }      
   
+   /**
+   * promptForUserName
+   *
+   * This method is called at startup to prmpt the user for their name.  
+   * 
+   * Parameters:   None. 
+   *   
+   * Return value: None. 
+   */
   public static void promptForUserName() throws Exception {
     try{  
       JFrame frame = new JFrame();
@@ -277,8 +337,4 @@ public class chatClient {
       throw(e);
     } 
   }      
-
-
-
-
 }
