@@ -48,7 +48,7 @@ public class keyCreator {
    */
   public static void main(String args[]) {
     try{
-      System.out.println("Please enter the passphrase to be used for key generation (at least 8 characters)");
+      System.out.println("Please enter the passphrase to be used for key generation (at least 16 characters)");
       BufferedReader br = new BufferedReader(new InputStreamReader(System.in)); 
       String passphrase = br.readLine();
       System.out.println("Please enter the server IP or Enter to use the current local IP address for server");
